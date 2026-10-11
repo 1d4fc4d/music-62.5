@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Hub - Khám Phá Thế Giới Âm Nhạc</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            900: '#14532d',
+                        },
+                        dark: {
+                            bg: '#0b0f19',
+                            card: '#111827',
+                            border: '#1f293d',
+                            accent: '#6366f1'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(31, 41, 55, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #a855f7, #6366f1, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.6);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between custom-scrollbar">
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-gray-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('history')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <i data-lucide="music" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight text-white">Music<span class="gradient-text">Hub</span></span>
+                </div>
+
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex space-x-1 lg:space-x-2">
+                    <button onclick="switchTab('history')" id="nav-history" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-indigo-400 bg-indigo-500/10 border border-indigo-500/30 flex items-center space-x-2">
+                        <i data-lucide="clock" class="w-4 h-4"></i>
+                        <span>Lịch Sử</span>
+                    </button>
+                    <button onclick="switchTab('modernization')" id="nav-modernization" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-gray-400 hover:text-white hover:bg-gray-800 flex items-center space-x-2">
+                        <i data-lucide="cpu" class="w-4 h-4"></i>
+                        <span>Hiện Đại Hóa</span>
+                    </button>
+                    <button onclick="switchTab('potential')" id="nav-potential" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-gray-400 hover:text-white hover:bg-gray-800 flex items-center space-x-2">
+                        <i data-lucide="zap" class="w-4 h-4"></i>
+                        <span>Tiềm Năng</span>
+                    </button>
+                    <button onclick="switchTab('hubs')" id="nav-hubs" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-gray-400 hover:text-white hover:bg-gray-800 flex items-center space-x-2">
+                        <i data-lucide="globe" class="w-4 h-4"></i>
+                        <span>Điểm Bùng Nổ</span>
+                    </button>
+                    <button onclick="switchTab('preferences')" id="nav-preferences" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-gray-400 hover:text-white hover:bg-gray-800 flex items-center space-x-2">
+                        <i data-lucide="sliders" class="w-4 h-4"></i>
+                        <span>Thị Hiếu & Trải Nghiệm</span>
+                    </button>
+                </nav>
+
+                <!-- Audio Visualizer / Quick Audio Player Indicator -->
+                <div class="hidden sm:flex items-center space-x-3 bg-gray-900/80 px-3 py-1.5 rounded-full border border-gray-800">
+                    <button id="global-play-btn" onclick="toggleAudio()" class="w-7 h-7 rounded-full bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center transition">
+                        <i id="global-play-icon" data-lucide="play" class="w-4 h-4 text-white fill-current"></i>
+                    </button>
+                    <div class="flex items-center space-x-1 h-4 w-12" id="visualizer-bars">
+                        <span class="w-1 bg-indigo-500 rounded-full h-2 transition-all duration-300"></span>
+                        <span class="w-1 bg-purple-500 rounded-full h-4 transition-all duration-300"></span>
+                        <span class="w-1 bg-pink-500 rounded-full h-1 transition-all duration-300"></span>
+                        <span class="w-1 bg-indigo-400 rounded-full h-3 transition-all duration-300"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Bar -->
+        <div class="md:hidden flex overflow-x-auto px-4 py-2 border-t border-gray-800 gap-2 custom-scrollbar">
+            <button onclick="switchTab('history')" id="mobile-nav-history" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap bg-indigo-600 text-white">Lịch Sử</button>
+            <button onclick="switchTab('modernization')" id="mobile-nav-modernization" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap bg-gray-800 text-gray-300">Hiện Đại Hóa</button>
+            <button onclick="switchTab('potential')" id="mobile-nav-potential" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap bg-gray-800 text-gray-300">Tiềm Năng</button>
+            <button onclick="switchTab('hubs')" id="mobile-nav-hubs" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap bg-gray-800 text-gray-300">Nơi Bùng Nổ</button>
+            <button onclick="switchTab('preferences')" id="mobile-nav-preferences" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap bg-gray-800 text-gray-300">Thị Hiếu</button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- TAB 1: LỊCH SỬ ÂM NHẠC -->
+        <section id="tab-history" class="tab-content space-y-8 animate-fadeIn">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900/60 via-purple-900/40 to-dark-card border border-indigo-500/20 p-8 md:p-12">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full">Tổng Quan Hành Trình</span>
+                    <h1 class="text-3xl md:text-5xl font-extrabold text-white mt-4 tracking-tight leading-tight">Lịch Sử & Sự Tiến Hóa Của <span class="gradient-text">Âm Nhạc</span></h1>
+                    <p class="mt-4 text-gray-300 text-base md:text-lg leading-relaxed">Từ những tiếng đập nhịp sơ khai thời tiền sử cho đến những bản giao hưởng kinh điển và nhịp điệu điện tử hiện đại. Khám phá hành trình dòng chảy giai điệu của nhân loại qua hàng thiên niên kỷ.</p>
+                </div>
+                <div class="absolute right-[-20px] bottom-[-20px] opacity-10 md:opacity-20 pointer-events-none">
+                    <i data-lucide="disc" class="w-96 h-96 text-indigo-400 animate-spin-slow"></i>
+                </div>
+            </div>
+
+            <!-- Interactive Timeline Controls -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <button onclick="selectEra(0)" id="era-btn-0" class="era-btn p-4 rounded-xl border text-left transition-all bg-indigo-600/20 border-indigo-500 text-white">
+                    <span class="text-xs text-indigo-400 font-semibold block">Giai đoạn 1</span>
+                    <span class="text-sm font-bold block mt-1">Sơ Khai & Nguyên Thủy</span>
+                </button>
+                <button onclick="selectEra(1)" id="era-btn-1" class="era-btn p-4 rounded-xl border border-gray-800 bg-gray-900/50 text-gray-400 hover:border-gray-700 text-left transition-all">
+                    <span class="text-xs text-gray-500 font-semibold block">Giai đoạn 2</span>
+                    <span class="text-sm font-bold block mt-1">Cổ Đại & Trung Cổ</span>
+                </button>
+                <button onclick="selectEra(2)" id="era-btn-2" class="era-btn p-4 rounded-xl border border-gray-800 bg-gray-900/50 text-gray-400 hover:border-gray-700 text-left transition-all">
+                    <span class="text-xs text-gray-500 font-semibold block">Giai đoạn 3</span>
+                    <span class="text-sm font-bold block mt-1">Phục Hưng & Cổ Điển</span>
+                </button>
+                <button onclick="selectEra(3)" id="era-btn-3" class="era-btn p-4 rounded-xl border border-gray-800 bg-gray-900/50 text-gray-400 hover:border-gray-700 text-left transition-all">
+                    <span class="text-xs text-gray-500 font-semibold block">Giai đoạn 4</span>
+                    <span class="text-sm font-bold block mt-1">Thế Kỷ 20 & Hiện Đại</span>
+                </button>
+            </div>
+
+            <!-- Dynamic Era Detail Card -->
+            <div id="era-detail-container" class="glass-panel rounded-2xl p-6 md:p-8 border border-gray-800">
+                <!-- Content loaded dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- TAB 2: QUÁ TRÌNH HIỆN ĐẠI HÓA -->
+        <section id="tab-modernization" class="tab-content hidden space-y-8">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-full">Kỷ Nguyên Công Nghệ</span>
+                <h2 class="text-3xl font-extrabold text-white">Quá Trình <span class="gradient-text">Hiện Đại Hóa</span> Âm Nhạc</h2>
+                <p class="text-gray-400">Cách công nghệ kỹ thuật số, phần mềm DAW và Internet đã thay đổi hoàn toàn quy trình sáng tác, sản xuất và thưởng thức âm nhạc.</p>
+            </div>
+
+            <!-- Interactive Pillars of Modern Music -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- DAW Card -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 mb-4">
+                            <i data-lucide="sliders" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Trạm Âm Thanh Kỹ Thuật Số (DAW)</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            FL Studio, Ableton Live, Logic Pro đã dân chủ hóa việc sản xuất nhạc. Bất kỳ ai cũng có thể biến phòng ngủ thành phòng thu chuyên nghiệp.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-gray-800">
+                        <span class="text-xs text-purple-400 font-semibold">Tác động: Giảm 90% chi phí sản xuất</span>
+                    </div>
+                </div>
+
+                <!-- Electronic Music Card -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 mb-4">
+                            <i data-lucide="activity" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Nhạc Điện Tử & Synthesizer</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            Sự ra đời của MIDI, Synthesizer và Sampler đã mở rộng kho thanh âm vô tận, vượt qua giới hạn của các nhạc cụ acoustic truyền thống.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-gray-800">
+                        <span class="text-xs text-indigo-400 font-semibold">Tác động: Đột phá cấu trúc sóng âm</span>
+                    </div>
+                </div>
+
+                <!-- Streaming Card -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-green-500/20 border border-green-500/40 flex items-center justify-center text-green-400 mb-4">
+                            <i data-lucide="radio" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Nền Tảng Streaming</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            Spotify, Apple Music, YouTube Music giúp người nghe tiếp cận hàng chục triệu bài hát tức thì, thay thế đĩa CD và Cassette vật lý.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-gray-800">
+                        <span class="text-xs text-green-400 font-semibold">Tác động: Toàn cầu hóa âm nhạc</span>
+                    </div>
+                </div>
+
+                <!-- Digital Formats Card -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-pink-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400 mb-4">
+                            <i data-lucide="file-audio" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Định Dạng Âm Thanh Cao Cấp</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            Từ MP3 nén chất lượng thấp chuyển sang Lossless, FLAC, Spatial Audio (Âm thanh vòm 360 độ) đem lại trải nghiệm chân thực tuyệt đối.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-gray-800">
+                        <span class="text-xs text-pink-400 font-semibold">Tác động: Trải nghiệm nghe đỉnh cao</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Interactive Tool -->
+            <div class="glass-panel p-6 md:p-8 rounded-2xl border border-gray-800 mt-8">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i data-lucide="arrow-left-right" class="text-indigo-400"></i>
+                    So Sánh: Sản Xuất Âm Nhạc Truyền Thống vs Hiện Đại
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-900/80 p-5 rounded-xl border border-gray-800">
+                        <span class="text-red-400 font-bold text-sm uppercase">Kỷ Nguyên Cũ (Trước 2000)</span>
+                        <ul class="mt-3 space-y-3 text-sm text-gray-300">
+                            <li class="flex items-start gap-2"><i data-lucide="x-circle" class="w-4 h-4 text-red-400 shrink-0 mt-0.5"></i> Cần phòng thu đắt đỏ với thiết bị hàng trăm nghìn USD.</li>
+                            <li class="flex items-start gap-2"><i data-lucide="x-circle" class="w-4 h-4 text-red-400 shrink-0 mt-0.5"></i> Phụ thuộc hoàn toàn vào các hãng thu âm (Record Labels) để phát hành đĩa.</li>
+                            <li class="flex items-start gap-2"><i data-lucide="x-circle" class="w-4 h-4 text-red-400 shrink-0 mt-0.5"></i> Tiếp cận khán giả hạn chế theo khu vực địa lý.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-900/80 p-5 rounded-xl border border-gray-800">
+                        <span class="text-emerald-400 font-bold text-sm uppercase">Kỷ Nguyên Kỹ Thuật Số (Hiện Nay)</span>
+                        <ul class="mt-3 space-y-3 text-sm text-gray-300">
+                            <li class="flex items-start gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i> Chỉ cần Laptop, Microphone & Phần mềm DAW tại nhà.</li>
+                            <li class="flex items-start gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i> Tự phát hành toàn cầu qua DistroKid, TuneCore lên Spotify/Apple Music.</li>
+                            <li class="flex items-start gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i> Tiếp cận khán giả toàn cầu tức thì qua thuật toán gợi ý & TikTok.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: TIỀM NĂNG & ỨNG DỤNG -->
+        <section id="tab-potential" class="tab-content hidden space-y-8">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">Sức Mạnh Vượt Bậc</span>
+                <h2 class="text-3xl font-extrabold text-white">Tiềm Năng & <span class="gradient-text">Ứng Dụng</span> Đa Ngành</h2>
+                <p class="text-gray-400">Âm nhạc không chỉ để giải trí mà còn là công cụ trị liệu tâm lý, động lực kinh tế toàn cầu và trí tuệ nhân tạo thế hệ mới.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Music Therapy -->
+                <div class="glass-card p-6 rounded-2xl flex items-start space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0">
+                        <i data-lucide="heart-pulse" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Trị Liệu Âm Nhạc (Music Therapy)</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-3">
+                            Âm nhạc giúp giảm đáng kể hormone cortisol (căng thẳng), hỗ trợ phục hồi cho bệnh nhân trầm cảm, Alzheimer và cải thiện khả năng tập trung (Alpha waves, Binaural beats).
+                        </p>
+                        <span class="inline-block px-2.5 py-1 text-xs bg-pink-500/10 text-pink-300 rounded-md border border-pink-500/20">Ứng dụng y khoa & tâm lý</span>
+                    </div>
+                </div>
+
+                <!-- AI in Music -->
+                <div class="glass-card p-6 rounded-2xl flex items-start space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+                        <i data-lucide="bot" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Trí Tuệ Nhân Tạo (AI Music)</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-3">
+                            Các công cụ AI (Suno, Udio, Magenta) cho phép sáng tác giai điệu, tự động mix/master nhạc chuyên nghiệp và gợi ý danh sách nghe cá nhân hóa theo tâm trạng.
+                        </p>
+                        <span class="inline-block px-2.5 py-1 text-xs bg-cyan-500/10 text-cyan-300 rounded-md border border-cyan-500/20">Sáng tạo đột phá</span>
+                    </div>
+                </div>
+
+                <!-- Global Economy -->
+                <div class="glass-card p-6 rounded-2xl flex items-start space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                        <i data-lucide="trending-up" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Động Lực Kinh Tế Hàng Tỷ USD</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-3">
+                            Thị trường công nghiệp âm nhạc đạt hàng chục tỷ USD năm 2025 thông qua các chuyến lưu diễn thế giới (Concerts, Eras Tour), bản quyền trực tuyến và quảng cáo.
+                        </p>
+                        <span class="inline-block px-2.5 py-1 text-xs bg-amber-500/10 text-amber-300 rounded-md border border-amber-500/20">Kinh tế sáng tạo</span>
+                    </div>
+                </div>
+
+                <!-- Cultural Bridge -->
+                <div class="glass-card p-6 rounded-2xl flex items-start space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+                        <i data-lucide="globe-2" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Cầu Nối Văn Hóa Toàn Cầu</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-3">
+                            Âm nhạc vượt qua rào cản ngôn ngữ. Những bài hát tiếng Hàn (K-Pop), tiếng Tây Ban Nha (Despacito) hay nhạc dân gian đương đại Việt Nam trở thành hiện tượng toàn cầu.
+                        </p>
+                        <span class="inline-block px-2.5 py-1 text-xs bg-indigo-500/10 text-indigo-300 rounded-md border border-indigo-500/20">Kết nối cộng đồng</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: NƠI ÂM NHẠC BÙNG NỔ -->
+        <section id="tab-hubs" class="tab-content hidden space-y-8">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-full">Tâm Điểm Lan Tỏa</span>
+                <h2 class="text-3xl font-extrabold text-white">Nơi Âm Nhạc <span class="gradient-text">Bùng Nổ & Lan Tỏa</span></h2>
+                <p class="text-gray-400">Khám phá các trung tâm âm nhạc thế giới và các nền tảng video ngắn – nơi biến một giai điệu thành cơn sốt toàn cầu.</p>
+            </div>
+
+            <!-- Regional Selector Buttons -->
+            <div class="flex flex-wrap justify-center gap-2">
+                <button onclick="selectHub('tiktok')" id="hub-btn-tiktok" class="hub-btn px-4 py-2 rounded-xl text-sm font-semibold border bg-rose-600/20 border-rose-500 text-white flex items-center space-x-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-rose-400"></i>
+                    <span>TikTok & Reels</span>
+                </button>
+                <button onclick="selectHub('usuk')" id="hub-btn-usuk" class="hub-btn px-4 py-2 rounded-xl text-sm font-semibold border border-gray-800 bg-gray-900/50 text-gray-400 hover:border-gray-700 flex items-center space-x-2">
+                    <i data-lucide="flag" class="w-4 h-4"></i>
+                    <span>US-UK Pop/Hip-hop</span>
+                </button>
+                <button onclick="selectHub('kpop')" id="hub-btn-kpop" class="hub-btn px-4 py-2 rounded-xl text-sm font-semibold border border-gray-800 bg-gray-900/50 text-gray-400 hover:border-gray-700 flex items-center space-x-2">
+                    <i data-lucide="star" class="w-4 h-4"></i>
+                    <span>K-Pop (Hàn Quốc)</span>
+                </button>
+                <button onclick="selectHub('latin')" id="hub-btn-latin" class="hub-btn px-4 py-2 rounded-xl text-sm font-semibold border border-gray-800 bg-gray-900/50 text-gray-400 hover:border-gray-700 flex items-center space-x-2">
+                    <i data-lucide="flame" class="w-4 h-4"></i>
+                    <span>Nhạc Latin / Reggaeton</span>
+                </button>
+                <button onclick="selectHub('vpop')" id="hub-btn-vpop" class="hub-btn px-4 py-2 rounded-xl text-sm font-semibold border border-gray-800 bg-gray-900/50 text-gray-400 hover:border-gray-700 flex items-center space-x-2">
+                    <i data-lucide="music-2" class="w-4 h-4"></i>
+                    <span>V-Pop (Việt Nam)</span>
+                </button>
+            </div>
+
+            <!-- Hub Details Container -->
+            <div id="hub-detail-card" class="glass-panel p-6 md:p-8 rounded-2xl border border-gray-800">
+                <!-- Content loaded dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- TAB 5: ÂM NHẠC HIỆN TẠI & THỊ HIẾU -->
+        <section id="tab-preferences" class="tab-content hidden space-y-8">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full">Trải Nghiệm Tương Tác</span>
+                <h2 class="text-3xl font-extrabold text-white">Thị Hiếu Âm Nhạc <span class="gradient-text">Của Bạn</span></h2>
+                <p class="text-gray-400">Tham gia bài trắc nghiệm nhanh để khám phá gu âm nhạc cá nhân và xem thống kê dòng nhạc phổ biến hiện nay.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Left Column: Interactive Quiz -->
+                <div class="glass-panel p-6 rounded-2xl border border-gray-800 space-y-6">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i data-lucide="help-circle" class="text-indigo-400"></i>
+                        Trắc Nghiệm Gu Âm Nhạc
+                    </h3>
+
+                    <div id="quiz-container" class="space-y-4">
+                        <p id="quiz-question" class="text-gray-200 font-medium text-base">
+                            1. Khi cần tập trung làm việc hoặc học tập, bạn thường nghe gì?
+                        </p>
+                        <div id="quiz-options" class="space-y-2">
+                            <!-- Options rendered dynamically -->
+                        </div>
+                    </div>
+
+                    <div id="quiz-result" class="hidden p-4 rounded-xl bg-indigo-950/60 border border-indigo-500/30 space-y-2">
+                        <h4 class="text-lg font-bold text-indigo-300" id="result-title">Kết quả gu nhạc của bạn!</h4>
+                        <p class="text-sm text-gray-300" id="result-desc"></p>
+                        <button onclick="resetQuiz()" class="mt-2 text-xs text-indigo-400 underline font-semibold hover:text-indigo-300">Làm lại bài trắc nghiệm</button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Popular Genres Chart -->
+                <div class="glass-panel p-6 rounded-2xl border border-gray-800 space-y-4 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="text-indigo-400"></i>
+                            Tỷ Lệ Thị Hiếu Nghe Nhạc 2026
+                        </h3>
+                        <p class="text-xs text-gray-400">Dữ liệu tổng hợp xu hướng nghe nhạc phát trực tuyến toàn cầu.</p>
+                    </div>
+
+                    <div class="relative w-full h-64 flex items-center justify-center">
+                        <canvas id="genreChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Virtual Sound Generator / Tone Synthesizer Playground -->
+            <div class="glass-panel p-6 md:p-8 rounded-2xl border border-gray-800 space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i data-lucide="sliders" class="text-purple-400"></i>
+                            Phòng Thí Nghiệm Sóng Âm (Sound Synth Demo)
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-1">Chạm hoặc click các nốt nhạc bên dưới để phát âm thanh Synthesizer trực tiếp từ trình duyệt.</p>
+                    </div>
+                </div>
+
+                <!-- Keyboard Keys -->
+                <div class="flex justify-center items-center gap-1 sm:gap-2 py-4 overflow-x-auto">
+                    <button onclick="playNote(261.63, 'C4')" class="synth-key w-12 h-36 bg-gray-200 hover:bg-indigo-300 active:bg-indigo-500 text-gray-900 font-bold rounded-b-lg flex flex-col justify-end pb-2 items-center text-xs shadow-lg transition">C4</button>
+                    <button onclick="playNote(293.66, 'D4')" class="synth-key w-12 h-36 bg-gray-200 hover:bg-indigo-300 active:bg-indigo-500 text-gray-900 font-bold rounded-b-lg flex flex-col justify-end pb-2 items-center text-xs shadow-lg transition">D4</button>
+                    <button onclick="playNote(329.63, 'E4')" class="synth-key w-12 h-36 bg-gray-200 hover:bg-indigo-300 active:bg-indigo-500 text-gray-900 font-bold rounded-b-lg flex flex-col justify-end pb-2 items-center text-xs shadow-lg transition">E4</button>
+                    <button onclick="playNote(349.23, 'F4')" class="synth-key w-12 h-36 bg-gray-200 hover:bg-indigo-300 active:bg-indigo-500 text-gray-900 font-bold rounded-b-lg flex flex-col justify-end pb-2 items-center text-xs shadow-lg transition">F4</button>
+                    <button onclick="playNote(392.00, 'G4')" class="synth-key w-12 h-36 bg-gray-200 hover:bg-indigo-300 active:bg-indigo-500 text-gray-900 font-bold rounded-b-lg flex flex-col justify-end pb-2 items-center text-xs shadow-lg transition">G4</button>
+                    <button onclick="playNote(440.00, 'A4')" class="synth-key w-12 h-36 bg-gray-200 hover:bg-indigo-300 active:bg-indigo-500 text-gray-900 font-bold rounded-b-lg flex flex-col justify-end pb-2 items-center text-xs shadow-lg transition">A4</button>
+                    <button onclick="playNote(493.88, 'B4')" class="synth-key w-12 h-36 bg-gray-200 hover:bg-indigo-300 active:bg-indigo-500 text-gray-900 font-bold rounded-b-lg flex flex-col justify-end pb-2 items-center text-xs shadow-lg transition">B4</button>
+                    <button onclick="playNote(523.25, 'C5')" class="synth-key w-12 h-36 bg-indigo-500 hover:bg-indigo-400 active:bg-indigo-600 text-white font-bold rounded-b-lg flex flex-col justify-end pb-2 items-center text-xs shadow-lg transition">C5</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="glass-panel border-t border-gray-800/80 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500 space-y-2">
+            <p>© 2026 Music Hub. Khám Phá & Trải Nghiệm Âm Nhạc Toàn Cầu.</p>
+            <p class="text-xs text-gray-600">Được thiết kế với HTML5, Tailwind CSS và Web Audio API.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- DATA STORE ---
+        const historyData = [
+            {
+                title: "Thời Nguyên Thủy & Tiền Sử",
+                time: "Từ thời cựu thạch đến ~4000 TCN",
+                icon: "drum",
+                desc: "Âm nhạc bắt nguồn từ việc bắt chước tiếng động tự nhiên (tiếng chim hót, tiếng suối chảy) và tiếng vỗ tay, giọng hát sơ khai. Nhạc cụ đầu tiên là những chiếc sáo bằng xương động vật và trống gỗ, dùng trong nghi lễ săn bắn & tín ngưỡng.",
+                tags: ["Sáo Xương", "Trống Da Thú", "Tiếng Hát Tự Nhiên"]
+            },
+            {
+                title: "Thời Cổ Đại & Trung Cổ",
+                time: "Khoảng 4000 TCN - Kỷ nguyên 1400",
+                icon: "landmark",
+                desc: "Âm nhạc phát triển mạnh trong các nền văn minh Ai Cập, Hy Lạp và La Mã. Thời Trung cổ ghi nhận sự ra đời của nhạc xướng ngôn Công giáo (Gregorian Chants) và ký âm nốt nhạc đầu tiên bởi Guido d'Arezzo.",
+                tags: ["Ký Âm Nốt Nhạc", "Thánh Ca Gregorian", "Đàn Lyre"]
+            },
+            {
+                title: "Thời Phục Hưng & Cổ Điển",
+                time: "Thế kỷ 15 - Đầu thế kỷ 19",
+                icon: "music-4",
+                desc: "Thời kỳ bùng nổ của các bậc thầy tài ba như Bach, Mozart, Beethoven. Âm nhạc đa âm (Polyphony), nhạc giao hưởng dàn nhạc hoành tráng và nhạc kịch Opera ra đời, đặt nền móng lý thuyết âm nhạc hiện đại.",
+                tags: ["Mozart & Beethoven", "Nhạc Giao Hưởng", "Opera"]
+            },
+            {
+                title: "Thế Kỷ 20 & Kỷ Nguyên Hiện Đại",
+                time: "Thế kỷ 20 - Nay",
+                icon: "radio",
+                desc: "Sự ra đời của đĩa than, Radio, Rock & Roll, Jazz, Pop, Hip-hop và Nhạc Điện Tử (EDM). Âm nhạc trở thành công nghiệp đại chúng toàn cầu với sự hỗ trợ của các thiết bị khuếch đại điện tử.",
+                tags: ["Jazz & Rock", "Hip-hop", "Nhạc Điện Tử EDM"]
+            }
+        ];
+
+        const hubData = {
+            tiktok: {
+                title: "TikTok & Reels - Bệ Phóng Viral Mới",
+                subtitle: "Định hình xu hướng nhạc ngắn 15-30 giây",
+                desc: "Hiện nay, TikTok và Instagram Reels là nơi quyết định bài hát nào sẽ đứng đầu bảng xếp hạng Billboard. Nhịp điệu bắt tai, đoạn hook ấn tượng và vũ đạo dễ cover giúp bài hát vươn ra thế giới chỉ sau một đêm.",
+                highlights: ["Đoạn Hook gây nghiện", "Vũ đạo xu hướng", "Tăng tốc độ/Remix Sped-up"]
+            },
+            usuk: {
+                title: "US-UK - Môi Trường Công Nghiệp Chuẩn Toàn Cầu",
+                subtitle: "Thị trường Pop, Rap/Hip-hop & R&B",
+                desc: "Mỹ và Anh quốc vẫn giữ vị thế trung tâm công nghiệp âm nhạc với quy mô doanh thu khổng lồ. Các nghệ sĩ như Taylor Swift, Drake, The Weeknd tạo ra những tour diễn doanh thu hàng tỷ USD.",
+                highlights: ["Concert Eras Tour", "Billboard Hot 100", "Đa dạng thể loại"]
+            },
+            kpop: {
+                title: "K-Pop - Làn Sóng Hallyu Toàn Cầu",
+                subtitle: "Mô hình đào tạo & fandom chuyên nghiệp",
+                desc: "Hàn Quốc biến âm nhạc thành ngành xuất khẩu văn hóa mũi nhọn với hình ảnh chỉn chu, vũ đạo đồng đều và chiến lược kết nối fandom vượt trội (BTS, BLACKPINK, NewJeans).",
+                highlights: ["Vũ đạo đồng đều", "Văn hóa Fandom", "Concept thị giác mạnh"]
+            },
+            latin: {
+                title: "Nhạc Latin & Reggaeton - Sức Hút Cuồng Nhiệt",
+                subtitle: "Giai điệu nhiệt đới chiếm lĩnh trực tuyến",
+                desc: "Từ Despacito đến Bad Bunny, dòng nhạc Latin với nhịp điệu Reggaeton sôi động luôn thống trị lượt stream trên Spotify toàn cầu nhờ sự quyến rũ và năng lượng tích cực.",
+                highlights: ["Nhịp điệu Reggaeton", "Lượt stream kỷ lục", "Văn hóa nhảy"]
+            },
+            vpop: {
+                title: "V-Pop - Sự vươn mình của Âm Nhạc Việt",
+                subtitle: "Pha trộn bản sắc dân gian & chất liệu hiện đại",
+                desc: "Âm nhạc Việt Nam ghi dấu ấn mạnh mẽ với các nghệ sĩ trẻ tài năng (Sơn Tùng M-TP, Hoàng Thùy Linh, tlinh, Phương Mỹ Chi...). Các bài hát kết hợp nhạc cụ dân tộc với Pop/House đạt hiệu ứng quốc tế.",
+                highlights: ["Ngũ cung dân gian + Electronic", "Chất lượng MV cao", "Cộng đồng Gen Z năng động"]
+            }
+        };
+
+        const quizQuestions = [
+            {
+                q: "1. Khi cần không gian thư giãn hoặc tập trung làm việc, bạn thích nghe loại âm thanh nào?",
+                options: [
+                    { text: "Nhạc Lo-fi, Piano nhẹ nhàng hoặc nhạc không lời", type: "Chill" },
+                    { text: "Nhạc Pop vui tươi, bắt tai dễ thuộc lời", type: "Pop" },
+                    { text: "Nhạc EDM, Vinahouse hoặc Rock sôi động", type: "Energy" },
+                    { text: "Nhạc dân gian đương đại hoặc nhạc cổ điển sâu lắng", type: "Art" }
+                ]
+            },
+            {
+                q: "2. Yếu tố nào trong một bài hát khiến bạn thích nhất?",
+                options: [
+                    { text: "Giai điệu êmm ả, giúp xoa dịu tâm trạng", type: "Chill" },
+                    { text: "Đoạn điệp khúc (Hook) dễ thuộc và hình ảnh MV đẹp", type: "Pop" },
+                    { text: "Tiếng Bass dồn dập, nhịp điệu mạnh mẽ", type: "Energy" },
+                    { text: "Lời ca giàu ý nghĩa, hòa âm phối khí phức tạp", type: "Art" }
+                ]
+            }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let currentQuizIndex = 0;
+        let quizScores = { Chill: 0, Pop: 0, Energy: 0, Art: 0 };
+
+        // --- NAVIGATION LOGIC ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-gray-400 hover:text-white hover:bg-gray-800 flex items-center space-x-2";
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.className = "nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-indigo-400 bg-indigo-500/10 border border-indigo-500/30 flex items-center space-x-2";
+            }
+
+            // Sync mobile nav buttons
+            const mobileBtns = document.querySelectorAll('[id^="mobile-nav-"]');
+            mobileBtns.forEach(b => {
+                b.className = "px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap bg-gray-800 text-gray-300";
+            });
+            const activeMobile = document.getElementById(`mobile-nav-${tabId}`);
+            if (activeMobile) {
+                activeMobile.className = "px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap bg-indigo-600 text-white";
+            }
+
+            // Init chart if switching to preferences tab
+            if (tabId === 'preferences') {
+                setTimeout(initChart, 100);
+            }
+        }
+
+        // --- ERA (HISTORY) SELECTOR ---
+        function selectEra(index) {
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`era-btn-${i}`);
+                if (i === index) {
+                    btn.className = "era-btn p-4 rounded-xl border text-left transition-all bg-indigo-600/20 border-indigo-500 text-white shadow-lg";
+                } else {
+                    btn.className = "era-btn p-4 rounded-xl border border-gray-800 bg-gray-900/50 text-gray-400 hover:border-gray-700 text-left transition-all";
+                }
+            }
+
+            const era = historyData[index];
+            const container = document.getElementById('era-detail-container');
+            container.innerHTML = `
+                <div class="space-y-4 animate-fadeIn">
+                    <div class="flex flex-wrap justify-between items-center gap-2">
+                        <h3 class="text-2xl font-bold text-white flex items-center gap-2">
+                            <i data-lucide="${era.icon}" class="text-indigo-400"></i>
+                            ${era.title}
+                        </h3>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${era.time}</span>
+                    </div>
+                    <p class="text-gray-300 text-base leading-relaxed">${era.desc}</p>
+                    <div class="flex flex-wrap gap-2 pt-2">
+                        ${era.tags.map(tag => `<span class="px-2.5 py-1 text-xs bg-gray-800 text-gray-300 rounded-md border border-gray-700"># ${tag}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // --- HUB SELECTOR ---
+        function selectHub(key) {
+            const keys = ['tiktok', 'usuk', 'kpop', 'latin', 'vpop'];
+            keys.forEach(k => {
+                const btn = document.getElementById(`hub-btn-${k}`);
+                if (k === key) {
+                    btn.className = "hub-btn px-4 py-2 rounded-xl text-sm font-semibold border bg-rose-600/20 border-rose-500 text-white flex items-center space-x-2 shadow-lg";
+                } else {
+                    btn.className = "hub-btn px-4 py-2 rounded-xl text-sm font-semibold border border-gray-800 bg-gray-900/50 text-gray-400 hover:border-gray-700 flex items-center space-x-2";
+                }
+            });
+
+            const hub = hubData[key];
+            const container = document.getElementById('hub-detail-card');
+            container.innerHTML = `
+                <div class="space-y-4 animate-fadeIn">
+                    <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">${hub.subtitle}</span>
+                    <h3 class="text-2xl font-bold text-white">${hub.title}</h3>
+                    <p class="text-gray-300 text-base leading-relaxed">${hub.desc}</p>
+                    <div class="pt-2">
+                        <h4 class="text-sm font-semibold text-gray-200 mb-2">Đặc điểm nổi bật:</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            ${hub.highlights.map(h => `
+                                <div class="bg-gray-900/80 p-3 rounded-lg border border-gray-800 text-xs text-gray-300 flex items-center space-x-2">
+                                    <i data-lucide="check" class="w-4 h-4 text-rose-400 shrink-0"></i>
+                                    <span>${h}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // --- QUIZ SYSTEM ---
+        function renderQuiz() {
+            if (currentQuizIndex >= quizQuestions.length) {
+                showQuizResult();
+                return;
+            }
+            const q = quizQuestions[currentQuizIndex];
+            document.getElementById('quiz-question').innerText = q.q;
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3 rounded-xl bg-gray-900/80 hover:bg-indigo-600/20 border border-gray-800 hover:border-indigo-500/50 text-sm text-gray-300 hover:text-white transition flex justify-between items-center";
+                btn.innerHTML = `<span>${opt.text}</span> <i data-lucide="chevron-right" class="w-4 h-4 text-gray-500"></i>`;
+                btn.onclick = () => {
+                    quizScores[opt.type] += 1;
+                    currentQuizIndex++;
+                    renderQuiz();
+                };
+                optionsContainer.appendChild(btn);
+            });
+            lucide.createIcons();
+        }
+
+        function showQuizResult() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            const resultBox = document.getElementById('quiz-result');
+            resultBox.classList.remove('hidden');
+
+            let topType = Object.keys(quizScores).reduce((a, b) => quizScores[a] > quizScores[b] ? a : b);
+            const titleEl = document.getElementById('result-title');
+            const descEl = document.getElementById('result-desc');
+
+            if (topType === 'Chill') {
+                titleEl.innerText = "Gu Âm Nhạc: Thư Thái & Sâu Lắng (Chill/Acoustic)";
+                descEl.innerText = "Bạn ưa thích sự yên bình, âm thanh mộc mạc và giai điệu giúp xoa dịu tâm trí sau những giờ làm việc căng thẳng.";
+            } else if (topType === 'Pop') {
+                titleEl.innerText = "Gu Âm Nhạc: Sôi Nổi & Hợp Thời (Pop/Mainstream)";
+                descEl.innerText = "Bạn luôn bắt kịp xu hướng nhạc mới nhất, yêu thích các giai điệu bắt tai, dễ thuộc và giàu năng lượng tích cực.";
+            } else if (topType === 'Energy') {
+                titleEl.innerText = "Gu Âm Nhạc: Năng Lượng Bùng Nổ (EDM/Rock/Hip-hop)";
+                descEl.innerText = "Âm nhạc đối với bạn là nguồn nhiên liệu! Bạn thích nhịp Bass mạnh mẽ, giai điệu sôi động bùng nổ.";
+            } else {
+                titleEl.innerText = "Gu Âm Nhạc: Nghệ Thuật & Chiêm Nghiệm (Classical/Indie)";
+                descEl.innerText = "Bạn tìm kiếm chiều sâu trong lời ca và sự tinh tế trong hòa âm. Bạn đánh giá cao tính nghệ thuật độc đáo.";
+            }
+        }
+
+        function resetQuiz() {
+            currentQuizIndex = 0;
+            quizScores = { Chill: 0, Pop: 0, Energy: 0, Art: 0 };
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('quiz-result').classList.add('hidden');
+            renderQuiz();
+        }
+
+        // --- WEB AUDIO SYNTHESIZER ---
+        let audioCtx = null;
+        function playNote(freq, noteName) {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.8);
+        }
+
+        // --- AUDIO SIMULATOR ---
+        let isPlaying = false;
+        function toggleAudio() {
+            isPlaying = !isPlaying;
+            const playIcon = document.getElementById('global-play-icon');
+            const bars = document.getElementById('visualizer-bars').children;
+
+            if (isPlaying) {
+                playIcon.setAttribute('data-lucide', 'pause');
+                Array.from(bars).forEach(bar => bar.classList.add('animate-pulse'));
+            } else {
+                playIcon.setAttribute('data-lucide', 'play');
+                Array.from(bars).forEach(bar => bar.classList.remove('animate-pulse'));
+            }
+            lucide.createIcons();
+        }
+
+        // --- CHART JS INITIALIZATION ---
+        let chartInstance = null;
+        function initChart() {
+            const ctx = document.getElementById('genreChart');
+            if (!ctx) return;
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pop / Dance', 'Hip-Hop / Rap', 'Rock / Alternative', 'EDM / Dance', 'R&B / Soul', 'Khác'],
+                    datasets: [{
+                        data: [35, 25, 15, 12, 8, 5],
+                        backgroundColor: [
+                            '#6366f1',
+                            '#a855f7',
+                            '#ec4899',
+                            '#06b6d4',
+                            '#10b981',
+                            '#6b7280'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#9ca3af',
+                                font: { family: 'Inter', size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- ON PAGE LOAD INITIALIZATION ---
+        window.onload = function() {
+            lucide.createIcons();
+            selectEra(0);
+            selectHub('tiktok');
+            renderQuiz();
+        };
+    </script>
+</body>
+</html>
